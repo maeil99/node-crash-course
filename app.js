@@ -7,6 +7,7 @@ const morgan = require("morgan");
 const mongoose = require("mongoose");
 
 const Blog = require("./models/blog");
+const { render } = require("ejs");
 
 // express app
 const app = express();
@@ -28,6 +29,7 @@ app.set("view engine", "ejs");
 
 //middleware and static files (will allow all files to be accessed to public)
 app.use(express.static("public"));
+app.use(express.urlencoded({ extended: true }));
 
 //middleware
 // app.use((req, res, next) => {
@@ -127,6 +129,45 @@ app.get("/blogs", (req, res) => {
 });
 app.get("/blogs/create", (req, res) => {
   res.render("create", { tajuk: "Create a new blog" });
+});
+
+app.post("/blogs", (req, res) => {
+  //console.log(req.body);
+
+  const blog = new Blog(req.body);
+
+  blog
+    .save()
+    .then((result) => {
+      res.redirect("/blogs");
+      console.log("New blogs has been added");
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+});
+
+app.get("/blogs/:id", (req, res) => {
+  const id = req.params.id;
+  Blog.findById(id)
+    .then((result) => {
+      res.render("details", { blog: result, tajuk: "Blog details" });
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+});
+
+app.delete("/blogs/:id", (req, res) => {
+  const id = req.params.id;
+
+  Blog.findByIdAndDelete(id)
+    .then((result) => {
+      res.json({ redirect: "/blogs" });
+    })
+    .catch((err) => {
+      console.log(err);
+    });
 });
 
 //404 page (will use if no other req is match)
