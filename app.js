@@ -6,9 +6,7 @@ const morgan = require("morgan");
 //mongoose
 const mongoose = require("mongoose");
 
-const Blog = require("./models/blog");
-const { render } = require("ejs");
-
+const blogRoutes = require("./routes/blogRoutes");
 // express app
 const app = express();
 
@@ -116,59 +114,7 @@ app.get("/about-us", (req, res) => {
 });
 
 //blog routes
-app.get("/blogs", (req, res) => {
-  Blog.find()
-    //sort using createdAt will filter the blogs from newest to oldest
-    .sort({ createdAt: -1 })
-    .then((result) => {
-      res.render("index", { tajuk: "All Blogs", blogs: result });
-    })
-    .catch((err) => {
-      console.log(err);
-    });
-});
-app.get("/blogs/create", (req, res) => {
-  res.render("create", { tajuk: "Create a new blog" });
-});
-
-app.post("/blogs", (req, res) => {
-  //console.log(req.body);
-
-  const blog = new Blog(req.body);
-
-  blog
-    .save()
-    .then((result) => {
-      res.redirect("/blogs");
-      console.log("New blogs has been added");
-    })
-    .catch((err) => {
-      console.log(err);
-    });
-});
-
-app.get("/blogs/:id", (req, res) => {
-  const id = req.params.id;
-  Blog.findById(id)
-    .then((result) => {
-      res.render("details", { blog: result, tajuk: "Blog details" });
-    })
-    .catch((err) => {
-      console.log(err);
-    });
-});
-
-app.delete("/blogs/:id", (req, res) => {
-  const id = req.params.id;
-
-  Blog.findByIdAndDelete(id)
-    .then((result) => {
-      res.json({ redirect: "/blogs" });
-    })
-    .catch((err) => {
-      console.log(err);
-    });
-});
+app.use('/blogs',blogRoutes);
 
 //404 page (will use if no other req is match)
 app.use((req, res) => {
